@@ -12,7 +12,6 @@ import {
   ArrowRight,
   RotateCcw,
   Zap,
-  HelpCircle,
   BookOpen,
 } from 'lucide-react';
 import { ISL_QUIZ_QUESTIONS, ISLQuizQuestion } from '@/lib/isl-data';
@@ -31,14 +30,23 @@ export function ISLQuizModule() {
 
   const currentQ = questions[currentIndex];
 
+  const isOptionCorrect = (idx: number, optText: string) => {
+    return (
+      idx === currentQ.correctAnswer ||
+      optText === currentQ.correctAnswer ||
+      String(idx) === String(currentQ.correctAnswer)
+    );
+  };
+
   const handleSelectOption = (index: number) => {
     if (isAnswered) return;
     setSelectedOption(index);
     setIsAnswered(true);
 
-    const isCorrect = index === currentQ.correctAnswer;
+    const isCorrect = isOptionCorrect(index, currentQ.options[index]);
+    const basePoints = currentQ.points || 50;
     if (isCorrect) {
-      const bonusXP = currentQ.points + streak * 10;
+      const bonusXP = basePoints + streak * 10;
       setScore((prev) => prev + 1);
       setEarnedXP((prev) => prev + bonusXP);
       setStreak((prev) => prev + 1);
@@ -88,25 +96,25 @@ export function ISLQuizModule() {
   const letterCode = previewLetterMatch ? previewLetterMatch[1].toUpperCase() : 'A';
 
   return (
-    <div className="w-full max-w-4xl mx-auto rounded-3xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
+    <div className="w-full max-w-4xl mx-auto rounded-3xl bg-card border border-border p-6 sm:p-8 shadow-md space-y-6">
       {/* Top Status Bar: Progress, XP, Streak */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-md bg-indigo-950 text-indigo-300 border border-indigo-800">
+          <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/25">
             ISL Mastery Challenge
           </span>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-muted-foreground">
             Question {currentIndex + 1} of {questions.length}
           </span>
         </div>
 
         <div className="flex items-center gap-4 text-xs font-medium">
-          <div className="flex items-center gap-1.5 text-amber-400">
+          <div className="flex items-center gap-1.5 text-amber-500 font-semibold">
             <Flame className="w-4 h-4 fill-amber-500/20" />
             <span>{streak} Streak</span>
           </div>
-          <div className="flex items-center gap-1.5 text-cyan-400">
-            <Zap className="w-4 h-4 fill-cyan-500/20" />
+          <div className="flex items-center gap-1.5 text-secondary font-semibold">
+            <Zap className="w-4 h-4 fill-secondary/20" />
             <span>+{earnedXP} XP</span>
           </div>
         </div>
@@ -115,35 +123,35 @@ export function ISLQuizModule() {
       {!quizCompleted ? (
         <div className="space-y-6">
           {/* Progress bar */}
-          <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
             <div
-              className="bg-gradient-to-r from-indigo-500 to-sky-400 h-full transition-all duration-300"
+              className="bg-gradient-to-r from-primary to-secondary h-full transition-all duration-300"
               style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
             />
           </div>
 
           {/* Question Title & Meta */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-slate-400">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="capitalize">{currentQ.category}</span>
-              <span>·</span>
+              <span>&bull;</span>
               <span className="capitalize">{currentQ.difficulty}</span>
-              <span>·</span>
-              <span className="text-indigo-400 font-semibold">+{currentQ.points} Base XP</span>
+              <span>&bull;</span>
+              <span className="text-primary font-semibold">+{currentQ.points} Base XP</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight leading-snug">
               {currentQ.question}
             </h2>
           </div>
 
           {/* Optional 3D Visualizer clue for letter questions */}
           {previewLetterMatch && (
-            <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2">
-              <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+            <div className="p-3 rounded-2xl bg-muted/40 border border-border space-y-2">
+              <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
                 <span>Visual Reference (Letter {letterCode})</span>
-                <span className="text-[10px] text-slate-500">Rotate to inspect anatomical pose</span>
+                <span className="text-[10px] text-muted-foreground">Rotate to inspect anatomical pose</span>
               </div>
-              <HandSign3D currentSign={letterCode} showControls={false} className="h-44" />
+              <HandSign3D letter={letterCode} showControls={false} className="h-44" />
             </div>
           )}
 
@@ -151,16 +159,16 @@ export function ISLQuizModule() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             {currentQ.options.map((option, idx) => {
               const isSelected = selectedOption === idx;
-              const isCorrectAnswer = idx === currentQ.correctAnswer;
+              const isCorrectAnswer = isOptionCorrect(idx, option);
 
-              let btnStyle = 'bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-950 text-slate-200';
+              let btnStyle = 'bg-background border-border hover:border-primary/50 text-foreground';
               if (isAnswered) {
                 if (isCorrectAnswer) {
-                  btnStyle = 'bg-emerald-950/50 border-emerald-500 text-emerald-200 ring-1 ring-emerald-500';
+                  btnStyle = 'bg-emerald-500/15 border-emerald-500 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500 font-semibold';
                 } else if (isSelected) {
-                  btnStyle = 'bg-red-950/50 border-red-500 text-red-200 ring-1 ring-red-500';
+                  btnStyle = 'bg-destructive/15 border-destructive text-destructive ring-1 ring-destructive';
                 } else {
-                  btnStyle = 'bg-slate-950/30 border-slate-900 text-slate-600 opacity-50';
+                  btnStyle = 'bg-background/40 border-border/40 text-muted-foreground opacity-50';
                 }
               }
 
@@ -172,7 +180,7 @@ export function ISLQuizModule() {
                   className={`p-4 rounded-xl border text-left font-medium text-sm transition-all duration-200 flex items-start justify-between gap-3 ${btnStyle}`}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="w-6 h-6 rounded-lg bg-slate-900 border border-slate-700/80 text-xs font-mono flex items-center justify-center shrink-0 text-slate-300">
+                    <span className="w-6 h-6 rounded-lg bg-muted border border-border text-xs font-mono flex items-center justify-center shrink-0 text-foreground font-semibold">
                       {String.fromCharCode(65 + idx)}
                     </span>
                     <span className="leading-snug">{option}</span>
@@ -181,9 +189,9 @@ export function ISLQuizModule() {
                   {isAnswered && (
                     <div className="shrink-0">
                       {isCorrectAnswer ? (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                       ) : isSelected ? (
-                        <XCircle className="w-5 h-5 text-red-400" />
+                        <XCircle className="w-5 h-5 text-destructive" />
                       ) : null}
                     </div>
                   )}
@@ -201,38 +209,38 @@ export function ISLQuizModule() {
                 exit={{ opacity: 0 }}
                 className={`p-4 rounded-2xl border text-xs sm:text-sm space-y-1.5 ${
                   selectedOption === currentQ.correctAnswer
-                    ? 'bg-emerald-950/30 border-emerald-800/60 text-emerald-300'
-                    : 'bg-amber-950/30 border-amber-800/60 text-amber-300'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300'
                 }`}
               >
                 <div className="flex items-center gap-2 font-semibold">
                   {selectedOption === currentQ.correctAnswer ? (
                     <>
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       <span>Correct! +{currentQ.points + (streak - 1) * 10} XP awarded</span>
                     </>
                   ) : (
                     <>
-                      <XCircle className="w-4 h-4 text-amber-400" />
+                      <XCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                       <span>Not quite right</span>
                     </>
                   )}
                 </div>
-                <p className="text-slate-300 leading-relaxed pl-6">{currentQ.explanation}</p>
+                <p className="text-foreground leading-relaxed pl-6">{currentQ.explanation}</p>
               </motion.div>
             )}
           </AnimatePresence>
 
           {/* Footer Action */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800/80">
-            <span className="text-xs text-slate-500">
-              Indian Sign Language Research & Training Centre (ISLRTC) verified
+          <div className="flex items-center justify-between pt-4 border-t border-border">
+            <span className="text-xs text-muted-foreground">
+              ISLRTC verified Indian Sign Language curriculum
             </span>
 
             {isAnswered && (
               <button
                 onClick={handleNext}
-                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-semibold text-xs text-white shadow-md shadow-indigo-600/30 flex items-center gap-2 transition-colors"
+                className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 font-semibold text-xs text-primary-foreground shadow-sm flex items-center gap-2 transition-all"
               >
                 <span>{currentIndex < questions.length - 1 ? 'Next Question' : 'Complete Challenge'}</span>
                 <ArrowRight className="w-4 h-4" />
@@ -243,46 +251,46 @@ export function ISLQuizModule() {
       ) : (
         /* Quiz Finished Summary */
         <div className="py-8 text-center space-y-6">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-indigo-600 to-sky-400 flex items-center justify-center mx-auto text-white shadow-xl shadow-indigo-500/30">
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-primary to-secondary flex items-center justify-center mx-auto text-primary-foreground shadow-sm">
             <Award className="w-10 h-10" />
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-3xl font-extrabold text-white">Challenge Completed!</h2>
-            <p className="text-sm text-slate-400 max-w-md mx-auto">
-              You scored <span className="font-bold text-white">{score}</span> out of{' '}
-              <span className="font-bold text-white">{questions.length}</span> correct on official ISL curriculum questions.
+            <h2 className="text-3xl font-display font-extrabold text-foreground">Challenge Completed!</h2>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              You scored <span className="font-bold text-foreground">{score}</span> out of{' '}
+              <span className="font-bold text-foreground">{questions.length}</span> correct on official ISL curriculum questions.
             </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-lg mx-auto text-left">
-            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800">
-              <span className="text-[10px] font-mono text-slate-500 uppercase">Total XP Gained</span>
-              <p className="text-2xl font-bold text-cyan-400 mt-1">+{earnedXP} XP</p>
+            <div className="p-4 rounded-xl bg-background border border-border">
+              <span className="text-[10px] font-mono text-muted-foreground uppercase">Total XP Gained</span>
+              <p className="text-2xl font-bold text-secondary mt-1">+{earnedXP} XP</p>
             </div>
-            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800">
-              <span className="text-[10px] font-mono text-slate-500 uppercase">Accuracy Rate</span>
-              <p className="text-2xl font-bold text-emerald-400 mt-1">
+            <div className="p-4 rounded-xl bg-background border border-border">
+              <span className="text-[10px] font-mono text-muted-foreground uppercase">Accuracy Rate</span>
+              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
                 {Math.round((score / questions.length) * 100)}%
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 col-span-2 sm:col-span-1">
-              <span className="text-[10px] font-mono text-slate-500 uppercase">Max Streak</span>
-              <p className="text-2xl font-bold text-amber-400 mt-1">{streak} in a row</p>
+            <div className="p-4 rounded-xl bg-background border border-border col-span-2 sm:col-span-1">
+              <span className="text-[10px] font-mono text-muted-foreground uppercase">Max Streak</span>
+              <p className="text-2xl font-bold text-amber-500 mt-1">{streak} in a row</p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
             <button
               onClick={handleRestart}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-2"
+              className="px-4 py-2.5 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold flex items-center gap-2 border border-border transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Retry Challenge</span>
             </button>
             <Link
               href="/alphabet"
-              className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold shadow-sm flex items-center gap-2 transition-all"
             >
               <BookOpen className="w-4 h-4" />
               <span>Explore A–Z Alphabet</span>

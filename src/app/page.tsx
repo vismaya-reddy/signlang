@@ -1,510 +1,817 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'motion/react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
   ArrowRight,
-  BookOpen,
-  Layers,
-  Dumbbell,
-  Award,
-  Users,
-  ShieldCheck,
-  CheckCircle2,
-  ChevronRight,
+  Mail,
+  Lock,
+  User,
   Eye,
-  Zap,
-  Globe2,
-  HelpCircle,
-  Play,
+  EyeOff,
+  CheckCircle2,
+  AlertCircle,
   RotateCw,
+  ShieldCheck,
+  Check,
+  HelpCircle,
 } from 'lucide-react';
-import { Navbar } from '@/components/navbar';
-import { HeroCanvas3D } from '@/components/3d/HeroCanvas3D';
+import { ThemeSwitcher } from '@/components/theme-switcher';
 import { HandSign3D } from '@/components/3d/HandSign3D';
-import heroVisual from '@/assets/images/hero_sign_language_3d_1793897521552.jpg';
-import classroomVisual from '@/assets/images/isl_community_learning_1793897522362.jpg';
-import trackingVisual from '@/assets/images/interactive_gesture_preview_1793897522911.jpg';
+import { useAuth } from '@/hooks/use-auth';
 
-export default function Home() {
-  const [activeSignDemo, setActiveSignDemo] = useState<string>('A');
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+export default function AuthGatewayPage() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
 
-  const signButtons = [
-    { code: 'A', label: 'Vowel A (Thumb Touch)' },
-    { code: 'B', label: 'Letter B (Two Loops)' },
-    { code: 'C', label: 'Letter C (Curved Arc)' },
-    { code: 'D', label: 'Letter D (Index Touch)' },
-    { code: 'E', label: 'Vowel E (Index Tip)' },
-    { code: 'HELLO', label: 'Greeting (Namaste / Wave)' },
-  ];
+  // Mode: 'login' | 'signup' | 'forgot'
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot'>('login');
 
-  const features = [
-    {
-      icon: BookOpen,
-      title: 'Authentic Indian Sign Language (ISL)',
-      desc: 'Accurately codified following ISLRTC standards. Master the unique two-handed bilateral movements and the 5-finger vowel contact system.',
-      tag: 'ISLRTC Standard',
-    },
-    {
-      icon: Eye,
-      title: 'Interactive 3D Articulated Anatomy',
-      desc: 'Inspect finger bends, palm orientations, and contact points from any angle in full 3D space with zero camera occlusion.',
-      tag: 'Three.js Spatial Engine',
-    },
-    {
-      icon: Dumbbell,
-      title: 'Adaptive Quizzes & Biometric Feedback',
-      desc: 'Test your recognition with instant feedback, streak multipliers, and leveled XP progression directly synced to your profile.',
-      tag: 'Gamified Mastery',
-    },
-    {
-      icon: Layers,
-      title: 'Comprehensive Curated Lexicon',
-      desc: 'From essential greetings to emergency health signs and numbered values, organized with step-by-step hand posture breakdowns.',
-      tag: '100+ Core Signs',
-    },
-  ];
+  // Form states
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(true);
 
-  const stats = [
-    { value: '26', label: 'ISL Letters A–Z with 3D Models' },
-    { value: '100+', label: 'Verified Vocabulary Signs' },
-    { value: '98.6%', label: 'Anatomical Precision' },
-    { value: '100%', label: 'ISLRTC Standard Aligned' },
-  ];
+  // Status feedback
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const faqs = [
-    {
-      q: 'Why does SignVerse focus primarily on Indian Sign Language (ISL)?',
-      a: 'India is home to over 18 million Deaf and hard-of-hearing individuals. Unlike American Sign Language (ASL) which is predominantly one-handed, ISL utilizes a rich, two-handed alphabet and distinct cultural gestures codified by ISLRTC. SignVerse is tailored to make authentic ISL accessible worldwide.',
-    },
-    {
-      q: 'How does the 3D hand visualizer help me learn better?',
-      a: 'Flat 2D photos often fail to convey depth, thumb placement, or knuckle bends. Our interactive 3D engine lets you spin the hand 360°, inspect top and side views, and clearly observe where the dominant index touches the non-dominant hand for vowels.',
-    },
-    {
-      q: 'Do I need a VR headset or special camera?',
-      a: 'Not at all. SignVerse runs entirely inside your modern web browser on desktop, tablet, and mobile. The 3D models and quiz challenges are optimized for smooth 60 FPS performance without heavy hardware.',
-    },
-    {
-      q: 'Can I track my progress and earn certificates?',
-      a: 'Yes! Every quiz answered, letter mastered, and daily practice streak awards XP to your SignVerse profile. Track your mastery level, unlock achievement badges, and climb the learner leaderboard.',
-    },
-  ];
+  // 3D Preview Letter
+  const [previewSign, setPreviewSign] = useState<string>('HELLO');
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, authLoading, router]);
+
+  // Client-side password strength calculation
+  const passwordCriteria = {
+    length: password.length >= 8,
+    hasUpper: /[A-Z]/.test(password),
+    hasLower: /[a-z]/.test(password),
+    hasNumber: /\d/.test(password),
+  };
+  const passwordStrengthScore = Object.values(passwordCriteria).filter(Boolean).length;
+
+  // Handle Login
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (!email || !password) {
+      setError('Please provide both your registered email and password.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Authentication failed. Please verify credentials.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (data.session?.access_token) {
+        localStorage.setItem('auth_token', data.session.access_token);
+      }
+      if (data.user?.id) {
+        localStorage.setItem('user_id', data.user.id);
+      }
+
+      setSuccess('Signed in successfully! Entering your SignVerse Dashboard...');
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 800);
+    } catch (err: any) {
+      setError(err.message || 'Network error occurred during login. Please retry.');
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle Signup
+  const handleSignupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (!name.trim() || !email.trim() || !password) {
+      setError('Please fill out all registration fields.');
+      return;
+    }
+
+    if (!termsAccepted) {
+      setError('Please acknowledge the terms of use before registering.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters in length.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Sign up failed. Please check details and retry.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (data.session?.access_token) {
+        localStorage.setItem('auth_token', data.session.access_token);
+      }
+      if (data.user?.id) {
+        localStorage.setItem('user_id', data.user.id);
+      }
+
+      setSuccess('Account created successfully! Preparing your learning curriculum...');
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 1000);
+    } catch (err: any) {
+      setError(err.message || 'Network failure while registering account.');
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle Quick Demo Login
+  const handleDemoLogin = async () => {
+    setError(null);
+    setSuccess(null);
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: 'demo@signverse.org',
+          password: 'Password123!',
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        if (data.session?.access_token) {
+          localStorage.setItem('auth_token', data.session.access_token);
+        }
+        if (data.user?.id) {
+          localStorage.setItem('user_id', data.user.id);
+        }
+        setSuccess('Logged in as Demo Learner! Welcome to SignVerse.');
+        setTimeout(() => router.push('/dashboard'), 700);
+      } else {
+        // Fallback demo account
+        const fbRes = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: 'learner.demo@signverse.org',
+            password: 'Password123!',
+          }),
+        });
+        const fbData = await fbRes.json();
+        if (fbRes.ok) {
+          if (fbData.session?.access_token) {
+            localStorage.setItem('auth_token', fbData.session.access_token);
+          }
+          if (fbData.user?.id) {
+            localStorage.setItem('user_id', fbData.user.id);
+          }
+          setSuccess('Demo session active! Loading Dashboard...');
+          setTimeout(() => router.push('/dashboard'), 700);
+        } else {
+          setError('Demo credentials error. Please enter an email and password.');
+          setIsSubmitting(false);
+        }
+      }
+    } catch {
+      setError('Connection error initiating demo session.');
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle Google Sign-In Simulation
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: 'google.learner@signverse.org',
+          password: 'Password123!',
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        if (data.session?.access_token) {
+          localStorage.setItem('auth_token', data.session.access_token);
+        }
+        if (data.user?.id) {
+          localStorage.setItem('user_id', data.user.id);
+        }
+        setSuccess('Google OAuth session established! Redirecting...');
+        setTimeout(() => router.push('/dashboard'), 800);
+      } else {
+        setError('OAuth provider error. Please try email sign in.');
+        setIsSubmitting(false);
+      }
+    } catch {
+      setError('Failed to reach authentication provider.');
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle Forgot Password
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setError('Please provide your registered email address.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      if (res.ok) {
+        setSuccess('A password recovery email has been dispatched. Please check your inbox.');
+      } else {
+        setError('Could not process password reset request.');
+      }
+    } catch {
+      setError('Network error processing recovery.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // While checking auth state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
+          className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full mb-4"
+        />
+        <p className="text-sm font-medium text-muted-foreground animate-pulse">
+          Connecting to SignVerse...
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#080C1A] text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white">
-      <Navbar />
-
-      {/* HERO SECTION */}
-      <section className="relative min-h-[92vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-16 overflow-hidden">
-        {/* 3D Ambient Kinetic Constellation Canvas */}
-        <HeroCanvas3D />
-
-        {/* Ambient Gradient Glows */}
-        <div className="absolute top-1/4 -left-48 w-96 h-96 bg-indigo-600/20 rounded-full blur-[128px] pointer-events-none" />
-        <div className="absolute top-1/3 -right-48 w-96 h-96 bg-sky-500/20 rounded-full blur-[128px] pointer-events-none" />
-
-        <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Hero Left Content */}
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            {/* Attribution pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/80 backdrop-blur-md shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-sky-400" />
-              <span className="text-xs font-mono font-medium text-slate-300">
-                Official Indian Sign Language (ISL) Standard
+    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20 selection:text-primary">
+      {/* Top Bar with Brand & Global Theme Switcher */}
+      <header className="w-full border-b border-border/80 bg-card/60 backdrop-blur-md px-6 py-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary via-indigo-600 to-secondary p-[1px] shadow-sm shadow-primary/20">
+            <div className="w-full h-full bg-card rounded-[11px] flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-primary" />
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="font-display font-bold text-lg tracking-tight text-foreground">
+                SignVerse
               </span>
-            </div>
-
-            {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-white leading-[1.1]">
-              Master Sign Language in{' '}
-              <span className="bg-gradient-to-r from-indigo-400 via-sky-300 to-teal-300 bg-clip-text text-transparent">
-                True 3D Space
-              </span>
-            </h1>
-
-            {/* Subheading */}
-            <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
-              SignVerse bridges silent worlds. Explore authentic ISL with articulated 3D hand models, step-by-step bilateral mechanics, interactive quizzes, and real-time XP tracking.
-            </p>
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 pt-2">
-              <Link
-                href="/alphabet"
-                className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-500 hover:to-sky-400 text-white font-semibold text-sm shadow-xl shadow-indigo-600/25 flex items-center gap-2 group transition-all"
-              >
-                <span>Explore ISL Alphabet A–Z</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-
-              <Link
-                href="/practice"
-                className="px-6 py-3.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-semibold text-sm backdrop-blur-sm flex items-center gap-2 transition-colors"
-              >
-                <Dumbbell className="w-4 h-4 text-sky-400" />
-                <span>Take Practice Challenge</span>
-              </Link>
-
-              <Link
-                href="/vocabulary"
-                className="px-4 py-3.5 text-xs text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
-              >
-                <span>View Vocabulary Lexicon</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            {/* Trust highlights */}
-            <div className="pt-6 border-t border-slate-800/80 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-400">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>ISLRTC Codified</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                <span>Two-Handed Bilateral Signs</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-indigo-400" />
-                <span>No Hardware Required</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Hero Right Visual: 3D Render & Interactive Teaser */}
-          <div className="lg:col-span-5 relative">
-            <div className="relative rounded-3xl overflow-hidden border border-slate-800/80 shadow-2xl bg-slate-900/40 p-2 backdrop-blur-xl group">
-              <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-slate-950">
-                <Image
-                  src={heroVisual}
-                  alt="SignVerse 3D Indian Sign Language Experience"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  priority
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#080C1A] via-transparent to-transparent opacity-80" />
-
-                {/* Floating badge inside image */}
-                <div className="absolute bottom-4 left-4 right-4 p-3.5 rounded-xl bg-slate-900/90 border border-slate-700/80 backdrop-blur-md flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-sky-400">
-                      Real-time Spatial Kinematics
-                    </span>
-                    <h3 className="text-sm font-bold text-white">ISL Vowel A: Index to Thumb Contact</h3>
-                  </div>
-                  <Link
-                    href="/alphabet"
-                    className="p-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 shadow-sm"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* STATS STRIP */}
-      <section className="border-y border-slate-800/80 bg-slate-900/40 py-10 px-4 sm:px-6 lg:px-8 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {stats.map((item, idx) => (
-            <div key={idx} className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-black font-display text-white">
-                {item.value}
-              </div>
-              <p className="text-xs sm:text-sm text-slate-400">{item.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* INTERACTIVE 3D SANDBOX TRYOUT */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-10">
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-mono font-semibold uppercase text-indigo-400 tracking-wider">
-            Live 3D Inspection Sandbox
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Rotate, Inspect & Practice Any Sign
-          </h2>
-          <p className="text-sm text-slate-400">
-            Click on any sample gesture below to command the 3D model. Observe thumb contacts, finger curl angles, and splay in real-time.
-          </p>
-        </div>
-
-        {/* Demo Selector Tabs */}
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {signButtons.map((btn) => (
-            <button
-              key={btn.code}
-              onClick={() => setActiveSignDemo(btn.code)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-                activeSignDemo === btn.code
-                  ? 'bg-gradient-to-r from-indigo-600 to-sky-500 text-white shadow-lg shadow-indigo-600/30'
-                  : 'bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white'
-              }`}
-            >
-              {btn.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Interactive 3D Canvas Box */}
-        <div className="max-w-3xl mx-auto rounded-3xl p-2 bg-gradient-to-b from-indigo-500/20 to-sky-500/10 border border-slate-800 shadow-2xl">
-          <HandSign3D currentSign={activeSignDemo} className="h-[420px]" />
-        </div>
-
-        <div className="text-center">
-          <Link
-            href="/alphabet"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-sky-400 hover:text-sky-300"
-          >
-            <span>See all 26 letters with bilateral step instructions</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-      </section>
-
-      {/* CORE FEATURES GRID */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-12">
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-mono font-semibold uppercase text-sky-400 tracking-wider">
-            Engineered for Accessibility & Clarity
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Why SignVerse Stands Apart
-          </h2>
-          <p className="text-sm text-slate-400">
-            Standard video lessons cannot be rotated or viewed from anatomical angles. SignVerse brings true spatial 3D learning and instant feedback together.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {features.map((feat, idx) => {
-            const Icon = feat.icon;
-            return (
-              <div
-                key={idx}
-                className="p-8 rounded-3xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 transition-all space-y-4 backdrop-blur-sm"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-950/80 border border-indigo-800/60 flex items-center justify-center text-indigo-400">
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <span className="text-[11px] font-mono px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
-                    {feat.tag}
-                  </span>
-                </div>
-                <h3 className="text-xl font-bold text-white tracking-tight">{feat.title}</h3>
-                <p className="text-sm text-slate-300 leading-relaxed">{feat.desc}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* BIOMETRIC TRACKING & CLASSROOM SHOWCASE */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-6 space-y-6">
-            <span className="text-xs font-mono font-semibold uppercase text-indigo-400 tracking-wider">
-              Community & Inclusive Education
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-              Designed with & for Indian Schools, Universities, and Deaf Communities
-            </h2>
-            <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-              Sign language is a constitutional right to communication. We collaborate with deaf educators across India to ensure every regional sign nuance, handshape, and facial expression aligns with authentic linguistic culture.
-            </p>
-
-            <div className="space-y-3 text-xs sm:text-sm text-slate-300">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-1" />
-                <span>Standardized ISLRTC (Indian Sign Language Research & Training Centre) reference corpus.</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-1" />
-                <span>Bilingual English & Hindi equivalents for every sign word and letter.</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-1" />
-                <span>Admin CMS for educators to add custom regional vocabulary and review media submissions.</span>
-              </div>
-            </div>
-
-            <Link
-              href="/signup"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-semibold text-xs text-white shadow-md shadow-indigo-600/30 transition-colors"
-            >
-              <span>Create Free Student Account</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-slate-800 shadow-xl">
-              <Image
-                src={classroomVisual}
-                alt="Indian Sign Language classroom education"
-                fill
-                className="object-cover"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
-              <div className="absolute bottom-3 left-3 right-3 text-xs text-white font-medium">
-                Classroom Inclusive Learning
-              </div>
-            </div>
-
-            <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-slate-800 shadow-xl">
-              <Image
-                src={trackingVisual}
-                alt="Biometric joint tracking diagram"
-                fill
-                className="object-cover"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
-              <div className="absolute bottom-3 left-3 right-3 text-xs text-white font-medium">
-                21 Landmark Joint Kinematics
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ ACCORDION */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full space-y-8">
-        <div className="text-center space-y-3">
-          <span className="text-xs font-mono font-semibold uppercase text-sky-400 tracking-wider">
-            Got Questions?
-          </span>
-          <h2 className="text-3xl font-extrabold text-white tracking-tight">
-            Frequently Asked Questions
-          </h2>
-        </div>
-
-        <div className="space-y-3">
-          {faqs.map((faq, idx) => {
-            const isOpen = openFaq === idx;
-            return (
-              <div
-                key={idx}
-                className="rounded-2xl bg-slate-900/60 border border-slate-800/80 overflow-hidden"
-              >
-                <button
-                  onClick={() => setOpenFaq(isOpen ? null : idx)}
-                  className="w-full p-5 text-left font-semibold text-sm sm:text-base text-white flex items-center justify-between gap-4"
-                >
-                  <span>{faq.q}</span>
-                  <ChevronRight
-                    className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
-                      isOpen ? 'rotate-90 text-indigo-400' : ''
-                    }`}
-                  />
-                </button>
-                {isOpen && (
-                  <div className="px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-slate-800/60 pt-3">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* CTA BANNER */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-        <div className="relative rounded-3xl bg-gradient-to-r from-indigo-900/80 via-indigo-950 to-slate-900 border border-indigo-700/60 p-8 sm:p-14 text-center space-y-6 overflow-hidden shadow-2xl">
-          <div className="relative z-10 max-w-2xl mx-auto space-y-4">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Ready to Speak with Your Hands?
-            </h2>
-            <p className="text-sm sm:text-base text-indigo-200 leading-relaxed">
-              Join thousands of learners mastering Indian Sign Language today. No credit card required.
-            </p>
-
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/signup"
-                className="px-6 py-3.5 rounded-xl bg-white text-indigo-950 hover:bg-slate-100 font-bold text-sm shadow-xl transition-colors"
-              >
-                Get Started Free
-              </Link>
-              <Link
-                href="/alphabet"
-                className="px-6 py-3.5 rounded-xl bg-indigo-900/60 hover:bg-indigo-900 text-white border border-indigo-700 font-semibold text-sm transition-colors"
-              >
-                Explore A–Z Curriculum
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-slate-800/80 bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 text-xs text-slate-500 mt-auto">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-8">
-          <div className="col-span-2 space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
-                SV
-              </div>
-              <span className="font-bold text-base text-white">SignVerse</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800">
+              <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/25 font-semibold">
                 ISL
               </span>
             </div>
-            <p className="text-slate-400 max-w-sm leading-relaxed">
-              SignVerse is an open educational platform engineered to accelerate Indian Sign Language (ISL) literacy through spatial 3D computing and gamified feedback.
-            </p>
-            <p className="text-[11px] text-slate-600">
-              Attribution: Sign language conventions codified from official ISLRTC educational resources.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <span className="font-semibold text-slate-300">Curriculum</span>
-            <ul className="space-y-1.5">
-              <li><Link href="/alphabet" className="hover:text-slate-300">ISL Alphabet A–Z</Link></li>
-              <li><Link href="/vocabulary" className="hover:text-slate-300">Core Vocabulary</Link></li>
-              <li><Link href="/practice" className="hover:text-slate-300">Quizzes & Challenges</Link></li>
-              <li><Link href="/modules/1" className="hover:text-slate-300">Guided Lessons</Link></li>
-            </ul>
-          </div>
-
-          <div className="space-y-2">
-            <span className="font-semibold text-slate-300">Platform</span>
-            <ul className="space-y-1.5">
-              <li><Link href="/dashboard" className="hover:text-slate-300">Student Dashboard</Link></li>
-              <li><Link href="/admin" className="hover:text-slate-300">Admin CMS</Link></li>
-              <li><Link href="/chat" className="hover:text-slate-300">AI Tutor Guide</Link></li>
-              <li><Link href="/profile" className="hover:text-slate-300">User Profile</Link></li>
-            </ul>
-          </div>
-
-          <div className="space-y-2">
-            <span className="font-semibold text-slate-300">Account</span>
-            <ul className="space-y-1.5">
-              <li><Link href="/login" className="hover:text-slate-300">Sign In</Link></li>
-              <li><Link href="/signup" className="hover:text-slate-300">Create Account</Link></li>
-              <li><Link href="/privacy" className="hover:text-slate-300">Privacy Policy</Link></li>
-            </ul>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-600">
-          <span>© {new Date().getFullYear()} SignVerse. All rights reserved.</span>
-          <span>Crafted with Three.js, React & Tailwind CSS.</span>
+        <div className="flex items-center gap-3">
+          <span className="hidden sm:inline-text text-xs text-muted-foreground">
+            Theme
+          </span>
+          <div className="p-0.5 rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors">
+            <ThemeSwitcher />
+          </div>
         </div>
+      </header>
+
+      {/* Main Authentication Arena */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex items-center justify-center">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          
+          {/* Left Column: 3D Hand Articulated Preview & Platform Value */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="lg:col-span-6 space-y-6"
+          >
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-semibold">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Indian Sign Language (ISL) Codified by ISLRTC</span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-extrabold tracking-tight text-foreground leading-[1.15]">
+                Master Sign Language in Interactive <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent">3D Space</span>
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-xl">
+                Experience authentic ISL with bilateral hand interaction, real-time gesture orientation, and gamified streak progression. Sign in to unlock your personalized curriculum.
+              </p>
+            </div>
+
+            {/* Interactive 3D Canvas Box */}
+            <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-accent animate-ping" />
+                  <span className="text-xs font-mono font-semibold text-foreground">
+                    Interactive 3D Preview: Sign &quot;{previewSign}&quot;
+                  </span>
+                </div>
+                <span className="text-[11px] text-muted-foreground font-mono">
+                  Drag to rotate 360°
+                </span>
+              </div>
+
+              {/* 3D Model Rendering */}
+              <div className="relative h-64 sm:h-72 w-full rounded-xl bg-muted/40 border border-border/60 overflow-hidden">
+                <HandSign3D letter={previewSign} />
+              </div>
+
+              {/* Quick sign switcher pills */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-xs text-muted-foreground mr-1">Preview Signs:</span>
+                {['HELLO', 'A', 'B', 'C', 'LOVE'].map((code) => (
+                  <button
+                    key={code}
+                    type="button"
+                    onClick={() => setPreviewSign(code)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                      previewSign === code
+                        ? 'bg-primary text-primary-foreground font-semibold shadow-2xs'
+                        : 'bg-background hover:bg-muted border border-border text-foreground'
+                    }`}
+                  >
+                    {code}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Feature highlights */}
+            <div className="grid grid-cols-3 gap-3 pt-1">
+              <div className="p-3 rounded-xl bg-card border border-border/80 text-center">
+                <p className="text-lg sm:text-xl font-display font-bold text-primary">26</p>
+                <p className="text-[11px] text-muted-foreground">Letters in 3D</p>
+              </div>
+              <div className="p-3 rounded-xl bg-card border border-border/80 text-center">
+                <p className="text-lg sm:text-xl font-display font-bold text-secondary">100+</p>
+                <p className="text-[11px] text-muted-foreground">Core ISL Signs</p>
+              </div>
+              <div className="p-3 rounded-xl bg-card border border-border/80 text-center">
+                <p className="text-lg sm:text-xl font-display font-bold text-accent">100%</p>
+                <p className="text-[11px] text-muted-foreground">ISLRTC Aligned</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Right Column: Authentication Card (Login / Sign Up / Forgot) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="lg:col-span-6 w-full max-w-md mx-auto"
+          >
+            <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-md relative overflow-hidden">
+              
+              {/* Subtle top gradient accent */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-accent" />
+
+              {/* Mode Tabs */}
+              {authMode !== 'forgot' && (
+                <div className="flex rounded-xl bg-muted p-1 mb-6 border border-border">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode('login');
+                      setError(null);
+                      setSuccess(null);
+                    }}
+                    className={`flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all ${
+                      authMode === 'login'
+                        ? 'bg-card text-foreground shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode('signup');
+                      setError(null);
+                      setSuccess(null);
+                    }}
+                    className={`flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all ${
+                      authMode === 'signup'
+                        ? 'bg-card text-foreground shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Create Account
+                  </button>
+                </div>
+              )}
+
+              {/* Header Title */}
+              <div className="mb-6">
+                {authMode === 'login' && (
+                  <div>
+                    <h2 className="text-2xl font-display font-bold text-foreground">Welcome Back</h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                      Sign in to continue your Indian Sign Language journey.
+                    </p>
+                  </div>
+                )}
+                {authMode === 'signup' && (
+                  <div>
+                    <h2 className="text-2xl font-display font-bold text-foreground">Start Learning ISL</h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                      Create your free SignVerse account and begin interactive signing today.
+                    </p>
+                  </div>
+                )}
+                {authMode === 'forgot' && (
+                  <div>
+                    <h2 className="text-2xl font-display font-bold text-foreground">Reset Password</h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                      Enter your email to receive recovery instructions.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Error Message Alert */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/25 text-destructive text-xs flex items-start gap-2.5"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </motion.div>
+              )}
+
+              {/* Success Message Alert */}
+              {success && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 p-3 rounded-xl bg-accent/15 border border-accent/30 text-accent-foreground text-xs flex items-start gap-2.5"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                  <span>{success}</span>
+                </motion.div>
+              )}
+
+              {/* Form Render */}
+              {authMode === 'login' && (
+                <form onSubmit={handleLoginSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-foreground mb-1.5">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-medium text-foreground">
+                        Password
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMode('forgot');
+                          setError(null);
+                          setSuccess(null);
+                        }}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm shadow-sm transition-all flex items-center justify-center gap-2 mt-2"
+                  >
+                    {isSubmitting ? (
+                      <RotateCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <span>Sign In</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+
+                  {/* 1-Click Demo Login Button */}
+                  <button
+                    type="button"
+                    onClick={handleDemoLogin}
+                    disabled={isSubmitting}
+                    className="w-full py-2.5 px-4 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/25 text-primary font-semibold text-xs transition-all flex items-center justify-center gap-2"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Quick Demo Learner (1-Click Login)</span>
+                  </button>
+                </form>
+              )}
+
+              {authMode === 'signup' && (
+                <form onSubmit={handleSignupSubmit} className="space-y-3.5">
+                  <div>
+                    <label className="block text-xs font-medium text-foreground mb-1">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        type="text"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Aarav Sharma"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-foreground mb-1">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="aarav@example.com"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-foreground mb-1">
+                      Password (min 8 characters)
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+
+                    {/* Password Strength Meter */}
+                    {password && (
+                      <div className="mt-2 space-y-1">
+                        <div className="flex gap-1 h-1">
+                          <div className={`h-full flex-1 rounded-full ${passwordStrengthScore >= 1 ? 'bg-red-500' : 'bg-muted'}`} />
+                          <div className={`h-full flex-1 rounded-full ${passwordStrengthScore >= 2 ? 'bg-amber-500' : 'bg-muted'}`} />
+                          <div className={`h-full flex-1 rounded-full ${passwordStrengthScore >= 3 ? 'bg-emerald-500' : 'bg-muted'}`} />
+                          <div className={`h-full flex-1 rounded-full ${passwordStrengthScore >= 4 ? 'bg-accent' : 'bg-muted'}`} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-foreground mb-1">
+                      Confirm Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="checkbox"
+                      id="terms"
+                      checked={termsAccepted}
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      className="rounded border-border text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="terms" className="text-xs text-muted-foreground">
+                      I accept the SignVerse learning terms and privacy policy.
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm shadow-sm transition-all flex items-center justify-center gap-2 mt-2"
+                  >
+                    {isSubmitting ? (
+                      <RotateCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <span>Create Account & Start Learning</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {authMode === 'forgot' && (
+                <form onSubmit={handleForgotSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-foreground mb-1.5">
+                      Account Email
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm shadow-sm transition-all flex items-center justify-center gap-2"
+                  >
+                    {isSubmitting ? (
+                      <RotateCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <span>Send Recovery Link</span>
+                    )}
+                  </button>
+
+                  <div className="text-center pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('login');
+                        setError(null);
+                        setSuccess(null);
+                      }}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Return to Sign In
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Social OAuth Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="px-2.5 bg-card text-muted-foreground">Or connect via</span>
+                </div>
+              </div>
+
+              {/* Google OAuth Button */}
+              <div className="grid grid-cols-1 gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={isSubmitting}
+                  className="w-full py-2.5 px-4 rounded-xl border border-border bg-background hover:bg-muted/70 text-foreground font-semibold text-xs flex items-center justify-center gap-2.5 transition-colors"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                    />
+                  </svg>
+                  <span>Continue with Google</span>
+                </button>
+              </div>
+
+            </div>
+          </motion.div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="w-full border-t border-border/80 py-4 px-6 text-center text-xs text-muted-foreground">
+        <p>SignVerse &bull; Authentic Indian Sign Language (ISL) Interactive Learning &bull; Aligned with ISLRTC standards</p>
       </footer>
     </div>
   );

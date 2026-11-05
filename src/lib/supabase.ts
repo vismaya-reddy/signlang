@@ -98,7 +98,7 @@ const mockFriendships = new Map<string, any[]>();
 const mockDailyXp = new Map<string, any[]>();
 const mockUserAchievements = new Map<string, any[]>();
 
-let activeUserId: string = 'usr_demo_1';
+let activeUserId: string = '';
 
 // Seed default demo user and profile
 const seedDemoUser: MockUser = {
@@ -749,12 +749,7 @@ export const getCurrentUser = async (explicitToken?: string, explicitUserId?: st
       return { id: u.id, email: u.email, user_metadata: u.user_metadata || { full_name: u.name } };
     }
 
-    // Default demo fallback user so dashboard never shows a broken blank state
-    return {
-      id: seedDemoUser.id,
-      email: seedDemoUser.email,
-      user_metadata: seedDemoUser.user_metadata,
-    };
+    return null;
   } catch {
     return null;
   }

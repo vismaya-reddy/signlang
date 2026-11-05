@@ -16,7 +16,7 @@ interface HandPoseConfig {
   secondHandActive?: boolean; // For two-handed ISL visualization
 }
 
-// Preset poses mapped to key ISL letter shapes
+// Comprehensive authentic ISL handshape poses (ISLRTC Standard)
 const POSE_LIBRARY: Record<string, HandPoseConfig> = {
   // Neutral relaxed hand
   neutral: {
@@ -33,7 +33,7 @@ const POSE_LIBRARY: Record<string, HandPoseConfig> = {
   A: {
     name: 'ISL Letter A (Thumb touch)',
     thumb: [0.2, 0.1, 0.05],
-    index: [0.05, 0.05, 0.05], // pointing straight to touch thumb
+    index: [0.05, 0.05, 0.05],
     middle: [1.4, 1.3, 1.1],
     ring: [1.4, 1.3, 1.1],
     pinky: [1.4, 1.3, 1.1],
@@ -41,9 +41,9 @@ const POSE_LIBRARY: Record<string, HandPoseConfig> = {
     wristRotation: [0.1, -0.2, 0.1],
     secondHandActive: true,
   },
-  // Letter B (Both hands create double loop / flat index & middle)
+  // Letter B (Double loop: thumb & index in circle, other fingers extended)
   B: {
-    name: 'ISL Letter B (Two Circles)',
+    name: 'ISL Letter B (Twin Loops)',
     thumb: [0.8, 0.6, 0.4],
     index: [0.9, 0.8, 0.7],
     middle: [0.1, 0.1, 0.1],
@@ -53,7 +53,7 @@ const POSE_LIBRARY: Record<string, HandPoseConfig> = {
     wristRotation: [0, 0, 0],
     secondHandActive: true,
   },
-  // Letter C (Curved hand shape)
+  // Letter C (One-handed curved arc)
   C: {
     name: 'ISL Letter C (Curved Arc)',
     thumb: [0.5, 0.4, 0.3],
@@ -63,10 +63,11 @@ const POSE_LIBRARY: Record<string, HandPoseConfig> = {
     pinky: [0.6, 0.5, 0.4],
     spread: [-0.1, 0.02, 0, -0.02, -0.04],
     wristRotation: [0, -0.4, 0],
+    secondHandActive: false,
   },
-  // Letter D (Dominant index touches non-dominant thumb and index)
+  // Letter D (Dominant index curve touches non-dominant vertical index)
   D: {
-    name: 'ISL Letter D',
+    name: 'ISL Letter D (Stem & Loop)',
     thumb: [0.5, 0.3, 0.2],
     index: [0.0, 0.0, 0.0],
     middle: [1.4, 1.4, 1.2],
@@ -74,10 +75,11 @@ const POSE_LIBRARY: Record<string, HandPoseConfig> = {
     pinky: [1.4, 1.4, 1.2],
     spread: [-0.3, 0, 0, 0, 0],
     wristRotation: [0, 0, 0],
+    secondHandActive: true,
   },
-  // Vowel E (Touch index tip)
+  // Vowel E (Dominant index touches tip of non-dominant index)
   E: {
-    name: 'ISL Letter E (Index Touch)',
+    name: 'ISL Letter E (Index Tip Touch)',
     thumb: [0.2, 0.1, 0.1],
     index: [0.0, 0.0, 0.0],
     middle: [1.3, 1.3, 1.1],
@@ -86,7 +88,259 @@ const POSE_LIBRARY: Record<string, HandPoseConfig> = {
     wristRotation: [0, -0.1, 0],
     secondHandActive: true,
   },
-  // Open Palm / Hello
+  // Letter F (Index and middle horizontal crossed with non-dominant)
+  F: {
+    name: 'ISL Letter F (Crossed 2-Fingers)',
+    thumb: [0.8, 0.6, 0.3],
+    index: [0.0, 0.0, 0.0],
+    middle: [0.0, 0.0, 0.0],
+    ring: [1.5, 1.4, 1.2],
+    pinky: [1.5, 1.4, 1.2],
+    spread: [-0.2, 0.05, -0.05, 0, 0],
+    wristRotation: [0.2, -0.3, 0.3],
+    secondHandActive: true,
+  },
+  // Letter G (Closed fist on non-dominant fist)
+  G: {
+    name: 'ISL Letter G (Fist Stack)',
+    thumb: [0.8, 0.6, 0.4],
+    index: [1.5, 1.4, 1.2],
+    middle: [1.5, 1.4, 1.2],
+    ring: [1.5, 1.4, 1.2],
+    pinky: [1.5, 1.4, 1.2],
+    spread: [-0.1, 0, 0, 0, 0],
+    wristRotation: [0.2, 0, 0],
+    secondHandActive: true,
+  },
+  // Letter H (Flat open palm sweeping forward over non-dominant palm)
+  H: {
+    name: 'ISL Letter H (Palm Brush)',
+    thumb: [0.1, 0.05, 0.05],
+    index: [0.0, 0.0, 0.0],
+    middle: [0.0, 0.0, 0.0],
+    ring: [0.0, 0.0, 0.0],
+    pinky: [0.0, 0.0, 0.0],
+    spread: [-0.2, 0.02, 0, -0.02, -0.04],
+    wristRotation: [0.3, -0.2, -0.1],
+    secondHandActive: true,
+  },
+  // Vowel I (Dominant index touches tip of non-dominant middle finger)
+  I: {
+    name: 'ISL Letter I (Middle Tip Touch)',
+    thumb: [0.3, 0.2, 0.1],
+    index: [0.0, 0.0, 0.0],
+    middle: [1.4, 1.3, 1.1],
+    ring: [1.4, 1.3, 1.1],
+    pinky: [1.4, 1.3, 1.1],
+    wristRotation: [0, -0.1, 0],
+    secondHandActive: true,
+  },
+  // Letter J (Dominant index tracing J hook curve)
+  J: {
+    name: 'ISL Letter J (Tracing J)',
+    thumb: [0.4, 0.3, 0.2],
+    index: [0.2, 0.1, 0.0],
+    middle: [1.4, 1.3, 1.1],
+    ring: [1.4, 1.3, 1.1],
+    pinky: [1.4, 1.3, 1.1],
+    wristRotation: [-0.2, 0.3, 0.2],
+    secondHandActive: true,
+  },
+  // Letter K (Hooked dominant index at middle joint of non-dominant index)
+  K: {
+    name: 'ISL Letter K (Diagonal Joint Hook)',
+    thumb: [0.6, 0.4, 0.2],
+    index: [0.8, 0.7, 0.4],
+    middle: [1.4, 1.3, 1.1],
+    ring: [1.4, 1.3, 1.1],
+    pinky: [1.4, 1.3, 1.1],
+    spread: [-0.2, 0, 0, 0, 0],
+    wristRotation: [0.1, 0.2, 0],
+    secondHandActive: true,
+  },
+  // Letter L (One-handed L: index vertical, thumb horizontal)
+  L: {
+    name: 'ISL Letter L (Right Angle L)',
+    thumb: [0.0, 0.0, 0.0],
+    index: [0.0, 0.0, 0.0],
+    middle: [1.6, 1.5, 1.3],
+    ring: [1.6, 1.5, 1.3],
+    pinky: [1.6, 1.5, 1.3],
+    spread: [-0.7, 0, 0, 0, 0],
+    wristRotation: [0, 0, 0],
+    secondHandActive: false,
+  },
+  // Letter M (3 fingers down on non-dominant palm)
+  M: {
+    name: 'ISL Letter M (Three Downstrokes)',
+    thumb: [0.9, 0.7, 0.4],
+    index: [0.6, 0.3, 0.1],
+    middle: [0.6, 0.3, 0.1],
+    ring: [0.6, 0.3, 0.1],
+    pinky: [1.6, 1.5, 1.3],
+    spread: [-0.2, 0.02, 0, -0.02, 0],
+    wristRotation: [0.4, 0, 0],
+    secondHandActive: true,
+  },
+  // Letter N (2 fingers down on non-dominant palm)
+  N: {
+    name: 'ISL Letter N (Two Downstrokes)',
+    thumb: [0.9, 0.7, 0.4],
+    index: [0.6, 0.3, 0.1],
+    middle: [0.6, 0.3, 0.1],
+    ring: [1.6, 1.5, 1.3],
+    pinky: [1.6, 1.5, 1.3],
+    spread: [-0.2, 0.02, -0.02, 0, 0],
+    wristRotation: [0.4, 0, 0],
+    secondHandActive: true,
+  },
+  // Vowel O (Dominant index touches tip of non-dominant ring finger)
+  O: {
+    name: 'ISL Letter O (Ring Tip Touch)',
+    thumb: [0.3, 0.2, 0.1],
+    index: [0.0, 0.0, 0.0],
+    middle: [1.4, 1.3, 1.1],
+    ring: [1.4, 1.3, 1.1],
+    pinky: [1.4, 1.3, 1.1],
+    wristRotation: [0, -0.1, 0],
+    secondHandActive: true,
+  },
+  // Letter P (Dominant loop at top of vertical non-dominant index)
+  P: {
+    name: 'ISL Letter P (Top Loop)',
+    thumb: [0.8, 0.6, 0.4],
+    index: [0.9, 0.8, 0.7],
+    middle: [1.4, 1.3, 1.1],
+    ring: [1.4, 1.3, 1.1],
+    pinky: [1.4, 1.3, 1.1],
+    wristRotation: [0.1, 0.1, 0],
+    secondHandActive: true,
+  },
+  // Letter Q (Hooked index through non-dominant circle)
+  Q: {
+    name: 'ISL Letter Q (Circle & Tail)',
+    thumb: [0.6, 0.4, 0.2],
+    index: [1.0, 0.7, 0.4],
+    middle: [1.4, 1.3, 1.1],
+    ring: [1.4, 1.3, 1.1],
+    pinky: [1.4, 1.3, 1.1],
+    wristRotation: [0.3, 0.2, 0],
+    secondHandActive: true,
+  },
+  // Letter R (Dominant curved bridge on flat palm)
+  R: {
+    name: 'ISL Letter R (Palm Bridge)',
+    thumb: [0.7, 0.5, 0.3],
+    index: [0.8, 0.7, 0.4],
+    middle: [1.4, 1.3, 1.1],
+    ring: [1.4, 1.3, 1.1],
+    pinky: [1.4, 1.3, 1.1],
+    wristRotation: [0.3, 0, 0],
+    secondHandActive: true,
+  },
+  // Letter S (Pinkies hooked together)
+  S: {
+    name: 'ISL Letter S (Pinky Hook)',
+    thumb: [0.9, 0.7, 0.4],
+    index: [1.5, 1.4, 1.2],
+    middle: [1.5, 1.4, 1.2],
+    ring: [1.5, 1.4, 1.2],
+    pinky: [0.3, 0.2, 0.1], // Pinky extended and hooked
+    spread: [-0.1, 0, 0, 0, 0.2],
+    wristRotation: [0, 0.2, -0.2],
+    secondHandActive: true,
+  },
+  // Letter T (Horizontal index meeting vertical stem)
+  T: {
+    name: 'ISL Letter T (T-Intersection)',
+    thumb: [0.7, 0.5, 0.3],
+    index: [0.0, 0.0, 0.0],
+    middle: [1.4, 1.3, 1.1],
+    ring: [1.4, 1.3, 1.1],
+    pinky: [1.4, 1.3, 1.1],
+    wristRotation: [0, 0, 0.5],
+    secondHandActive: true,
+  },
+  // Vowel U (Dominant index touches tip of non-dominant pinky finger)
+  U: {
+    name: 'ISL Letter U (Pinky Tip Touch)',
+    thumb: [0.3, 0.2, 0.1],
+    index: [0.0, 0.0, 0.0],
+    middle: [1.4, 1.3, 1.1],
+    ring: [1.4, 1.3, 1.1],
+    pinky: [1.4, 1.3, 1.1],
+    wristRotation: [0, -0.1, 0],
+    secondHandActive: true,
+  },
+  // Letter V (Two fingers in V resting on flat non-dominant palm)
+  V: {
+    name: 'ISL Letter V (V-Sign on Palm)',
+    thumb: [0.8, 0.6, 0.4],
+    index: [0.0, 0.0, 0.0],
+    middle: [0.0, 0.0, 0.0],
+    ring: [1.5, 1.4, 1.2],
+    pinky: [1.5, 1.4, 1.2],
+    spread: [-0.2, 0.18, -0.18, 0, 0],
+    wristRotation: [0.3, 0, 0],
+    secondHandActive: true,
+  },
+  // Letter W (Interlaced fingers)
+  W: {
+    name: 'ISL Letter W (Interlaced Peaks)',
+    thumb: [0.2, 0.1, 0.1],
+    index: [0.1, 0.1, 0.1],
+    middle: [0.1, 0.1, 0.1],
+    ring: [0.1, 0.1, 0.1],
+    pinky: [0.1, 0.1, 0.1],
+    spread: [-0.3, 0.15, 0.05, -0.05, -0.15],
+    wristRotation: [0.2, 0, 0.2],
+    secondHandActive: true,
+  },
+  // Letter X (Both index fingers crossed)
+  X: {
+    name: 'ISL Letter X (Crossed Index)',
+    thumb: [0.7, 0.5, 0.3],
+    index: [0.0, 0.0, 0.0],
+    middle: [1.5, 1.4, 1.2],
+    ring: [1.5, 1.4, 1.2],
+    pinky: [1.5, 1.4, 1.2],
+    wristRotation: [0.1, -0.3, 0.4],
+    secondHandActive: true,
+  },
+  // Letter Y (Dominant index nestled in web between thumb & index)
+  Y: {
+    name: 'ISL Letter Y (Web Rest)',
+    thumb: [0.5, 0.3, 0.1],
+    index: [0.0, 0.0, 0.0],
+    middle: [1.4, 1.3, 1.1],
+    ring: [1.4, 1.3, 1.1],
+    pinky: [1.4, 1.3, 1.1],
+    wristRotation: [0.2, 0.1, 0],
+    secondHandActive: true,
+  },
+  // Letter Z (Dominant index tracing Z path)
+  Z: {
+    name: 'ISL Letter Z (Z-Trace)',
+    thumb: [0.6, 0.4, 0.2],
+    index: [0.1, 0.1, 0.0],
+    middle: [1.4, 1.3, 1.1],
+    ring: [1.4, 1.3, 1.1],
+    pinky: [1.4, 1.3, 1.1],
+    wristRotation: [0, 0.2, 0.2],
+    secondHandActive: true,
+  },
+  // Vocabulary Signs
+  NAMASTE: {
+    name: 'Namaste (Anjali Mudra)',
+    thumb: [0.0, 0.0, 0.0],
+    index: [0.0, 0.0, 0.0],
+    middle: [0.0, 0.0, 0.0],
+    ring: [0.0, 0.0, 0.0],
+    pinky: [0.0, 0.0, 0.0],
+    spread: [-0.1, 0.02, 0, -0.02, -0.04],
+    wristRotation: [0, 0.5, 0],
+    secondHandActive: true,
+  },
   HELLO: {
     name: 'Greeting / Open Palm',
     thumb: [0.1, 0.05, 0.05],
@@ -96,8 +350,51 @@ const POSE_LIBRARY: Record<string, HandPoseConfig> = {
     pinky: [0.0, 0.0, 0.0],
     spread: [-0.3, 0.08, 0, -0.08, -0.15],
     wristRotation: [0, 0, 0.1],
+    secondHandActive: false,
   },
-  // Fist / YES
+  THANK_YOU: {
+    name: 'Thank You (Chin forward)',
+    thumb: [0.1, 0.05, 0.05],
+    index: [0.0, 0.0, 0.0],
+    middle: [0.0, 0.0, 0.0],
+    ring: [0.0, 0.0, 0.0],
+    pinky: [0.0, 0.0, 0.0],
+    spread: [-0.2, 0.05, 0, -0.05, -0.1],
+    wristRotation: [0.4, -0.1, 0],
+    secondHandActive: false,
+  },
+  PLEASE: {
+    name: 'Please (Chest Circle)',
+    thumb: [0.0, 0.0, 0.0],
+    index: [0.0, 0.0, 0.0],
+    middle: [0.0, 0.0, 0.0],
+    ring: [0.0, 0.0, 0.0],
+    pinky: [0.0, 0.0, 0.0],
+    wristRotation: [0.2, -0.2, 0],
+    secondHandActive: false,
+  },
+  WATER: {
+    name: 'Water (W-Shape to Chin)',
+    thumb: [0.8, 0.6, 0.4],
+    index: [0.0, 0.0, 0.0],
+    middle: [0.0, 0.0, 0.0],
+    ring: [0.0, 0.0, 0.0],
+    pinky: [1.5, 1.4, 1.2],
+    spread: [-0.2, 0.1, 0, -0.1, 0],
+    wristRotation: [0.1, 0, 0],
+    secondHandActive: false,
+  },
+  HELP: {
+    name: 'Help (Thumbs-up on Palm)',
+    thumb: [0.0, 0.0, 0.0], // Thumbs up
+    index: [1.5, 1.4, 1.2],
+    middle: [1.5, 1.4, 1.2],
+    ring: [1.5, 1.4, 1.2],
+    pinky: [1.5, 1.4, 1.2],
+    spread: [-0.5, 0, 0, 0, 0],
+    wristRotation: [0, 0, 0],
+    secondHandActive: true,
+  },
   YES: {
     name: 'Fist Nod / Affirmatory',
     thumb: [0.9, 0.7, 0.5],
@@ -107,22 +404,33 @@ const POSE_LIBRARY: Record<string, HandPoseConfig> = {
     pinky: [1.5, 1.4, 1.2],
     spread: [-0.1, 0, 0, 0, 0],
     wristRotation: [0.3, 0, 0],
+    secondHandActive: false,
   },
-  // Pointing / YOU
-  YOU: {
-    name: 'Direct Pointing',
-    thumb: [0.8, 0.5, 0.3],
-    index: [0.0, 0.0, 0.0],
-    middle: [1.5, 1.4, 1.2],
+  NO: {
+    name: 'No (Snap Fingers to Thumb)',
+    thumb: [0.6, 0.4, 0.2],
+    index: [0.9, 0.8, 0.6],
+    middle: [0.9, 0.8, 0.6],
     ring: [1.5, 1.4, 1.2],
     pinky: [1.5, 1.4, 1.2],
-    spread: [-0.1, 0, 0, 0, 0],
-    wristRotation: [-0.3, 0.2, 0],
+    wristRotation: [0, 0, 0],
+    secondHandActive: false,
+  },
+  LOVE: {
+    name: 'Love (Crossed Arms Hug)',
+    thumb: [0.8, 0.6, 0.4],
+    index: [1.4, 1.3, 1.1],
+    middle: [1.4, 1.3, 1.1],
+    ring: [1.4, 1.3, 1.1],
+    pinky: [1.4, 1.3, 1.1],
+    wristRotation: [0.4, 0.3, -0.2],
+    secondHandActive: true,
   },
 };
 
 interface HandSign3DProps {
   currentSign?: string;
+  letter?: string;
   accentColor?: string;
   showControls?: boolean;
   className?: string;
@@ -130,12 +438,14 @@ interface HandSign3DProps {
 }
 
 export function HandSign3D({
-  currentSign = 'A',
+  currentSign,
+  letter,
   accentColor = '#6366f1',
   showControls = true,
   className = '',
   interactive = true,
 }: HandSign3DProps) {
+  const activeSignCode = (letter || currentSign || 'A').toUpperCase();
   const mountRef = useRef<HTMLDivElement>(null);
   const [wireframeMode, setWireframeMode] = useState<boolean>(false);
   const [skinStyle, setSkinStyle] = useState<'hologram' | 'anatomical' | 'cyber'>('hologram');
@@ -395,7 +705,7 @@ export function HandSign3D({
     nonDominantHand.hand.rotation.set(0.2, 0.6, -0.15);
     scene.add(nonDominantHand.hand);
 
-    const initialPose = POSE_LIBRARY[currentSign.toUpperCase()] || POSE_LIBRARY.A || POSE_LIBRARY.neutral;
+    const initialPose = POSE_LIBRARY[activeSignCode] || POSE_LIBRARY.A || POSE_LIBRARY.neutral;
 
     sceneRef.current = {
       scene,
@@ -530,13 +840,13 @@ export function HandSign3D({
     };
   }, []); // Run once on mount
 
-  // Update target pose when currentSign changes
+  // Update target pose when activeSignCode changes
   useEffect(() => {
     if (!sceneRef.current) return;
-    const poseKey = currentSign.toUpperCase();
+    const poseKey = activeSignCode;
     const pose = POSE_LIBRARY[poseKey] || POSE_LIBRARY.neutral;
     sceneRef.current.targetJointAngles = pose;
-  }, [currentSign]);
+  }, [activeSignCode]);
 
   // Pointer drag controls for 3D inspection
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -587,7 +897,7 @@ export function HandSign3D({
 
   return (
     <div
-      className={`relative w-full h-full min-h-[340px] rounded-2xl overflow-hidden bg-gradient-to-b from-slate-950/80 via-[#0B1021] to-slate-950 border border-slate-800/80 select-none ${className}`}
+      className={`relative w-full h-full min-h-[340px] rounded-2xl overflow-hidden bg-gradient-to-b from-card via-muted/40 to-card border border-border select-none ${className}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -600,15 +910,15 @@ export function HandSign3D({
 
       {/* Top minimal spec badge */}
       <div className="absolute top-4 left-4 z-10 flex items-center gap-2 pointer-events-none">
-        <div className="px-2.5 py-1 rounded-md bg-slate-900/90 border border-slate-700/60 backdrop-blur-md text-[11px] font-mono text-cyan-400 font-semibold tracking-wider uppercase">
-          ISL 3D Anatomy · {currentSign}
+        <div className="px-2.5 py-1 rounded-md bg-card/90 border border-border backdrop-blur-md text-[11px] font-mono text-primary font-semibold tracking-wider uppercase shadow-xs">
+          ISL 3D Anatomy &bull; {activeSignCode}
         </div>
-        <div className="px-2 py-1 rounded-md bg-slate-900/80 border border-slate-800 text-[10px] text-slate-400">
-          Drag to rotate · Scroll to zoom
+        <div className="px-2 py-1 rounded-md bg-card/80 border border-border text-[10px] text-muted-foreground shadow-xs">
+          Drag to rotate &bull; Scroll to zoom
         </div>
       </div>
 
-      {/* Collapsible Bottom Control Dock (Directive 5 compliant: zero viewport occlusion) */}
+      {/* Collapsible Bottom Control Dock */}
       {showControls && (
         <div
           className={`absolute bottom-3 left-1/2 -translate-x-1/2 z-20 w-[94%] max-w-[580px] transition-all duration-300 ${
@@ -619,26 +929,26 @@ export function HandSign3D({
           <div className="flex justify-center -mb-px">
             <button
               onClick={() => setHudCollapsed(!hudCollapsed)}
-              className="px-3 py-1 rounded-t-lg bg-slate-900/95 border-t border-x border-slate-700/80 text-[11px] font-medium text-slate-300 hover:text-white flex items-center gap-1.5 backdrop-blur-md shadow-lg"
+              className="px-3 py-1 rounded-t-lg bg-card/95 border-t border-x border-border text-[11px] font-medium text-foreground hover:text-primary flex items-center gap-1.5 backdrop-blur-md shadow-md"
             >
-              <Sliders className="w-3 h-3 text-cyan-400" />
+              <Sliders className="w-3 h-3 text-secondary" />
               <span>{hudCollapsed ? 'Show 3D Viewport Controls' : 'Hide Controls'}</span>
             </button>
           </div>
 
           {/* Unified Dock Container */}
-          <div className="p-2.5 rounded-xl bg-slate-900/95 border border-slate-700/80 backdrop-blur-xl shadow-2xl flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="p-2.5 rounded-xl bg-card/95 border border-border backdrop-blur-xl shadow-lg flex flex-wrap items-center justify-between gap-2 text-xs">
             {/* View angle buttons */}
             <div className="flex items-center gap-1">
-              <span className="text-[10px] font-mono uppercase text-slate-400 mr-1">Angle:</span>
+              <span className="text-[10px] font-mono uppercase text-muted-foreground mr-1">Angle:</span>
               {(['front', 'side', 'top', 'isometric'] as const).map((ang) => (
                 <button
                   key={ang}
                   onClick={() => setPresetAngle(ang)}
                   className={`px-2 py-1 rounded text-[11px] capitalize font-medium transition-colors ${
                     viewAngle === ang
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
+                      ? 'bg-primary text-primary-foreground shadow-2xs'
+                      : 'bg-muted text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {ang}
@@ -646,15 +956,15 @@ export function HandSign3D({
               ))}
             </div>
 
-            {/* Actions: Auto-rotate, Wireframe toggle */}
+            {/* Actions: Auto-rotate, Reset */}
             <div className="flex items-center gap-1.5 ml-auto">
               <button
                 onClick={() => setIsRotating(!isRotating)}
                 title="Toggle continuous turntable rotation"
                 className={`p-1.5 rounded transition-colors ${
                   isRotating
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                    : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                    ? 'bg-primary/20 text-primary border border-primary/30'
+                    : 'bg-muted text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <RotateCw className="w-3.5 h-3.5" />
@@ -668,7 +978,7 @@ export function HandSign3D({
                   setViewAngle('front');
                 }}
                 title="Reset Camera"
-                className="p-1.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700"
+                className="p-1.5 rounded bg-muted text-muted-foreground hover:text-foreground"
               >
                 <ZoomIn className="w-3.5 h-3.5" />
               </button>

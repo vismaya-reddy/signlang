@@ -2,5 +2,5 @@
   "name": "SignVerse — 3D & AI Sign Language Learning Platform",
   "description": "Premium Indian Sign Language (ISL) learning platform with interactive 3D hand visualizations, AI gesture feedback, gamified progress, and comprehensive curriculum.",
   "permissions": [],
-  "capabilities": []
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

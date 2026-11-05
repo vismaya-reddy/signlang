@@ -19,6 +19,7 @@ import {
 import { useAuth } from '@/hooks/use-auth';
 import { LessonMediaDisplay } from '@/components/lesson-media-display';
 import { ISLQuizModule } from '@/components/isl-quiz-module';
+import { Navbar } from '@/components/navbar';
 import { Sparkles, Layers, Award, GraduationCap } from 'lucide-react';
 
 export default function PracticePage() {
@@ -90,38 +91,8 @@ export default function PracticePage() {
 
   return (
     <ProtectedLayout>
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95">
-        {/* Header */}
-        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <Link href="/dashboard">
-              <motion.div
-                whileHover={{ x: -4 }}
-                className="flex items-center gap-3 cursor-pointer"
-              >
-                <div className="p-2 bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors">
-                  <ArrowLeft className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Back to</p>
-                  <p className="font-semibold">Dashboard</p>
-                </div>
-              </motion.div>
-            </Link>
-
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={logout}
-                className="text-destructive hover:text-destructive"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
-            </div>
-          </div>
-        </header>
+      <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20 selection:text-primary">
+        <Navbar />
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-6 py-12">

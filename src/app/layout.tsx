@@ -3,8 +3,12 @@ import "./globals.css";
 import { ThemeProvider } from "@/app/providers/theme-provider";
 
 export const metadata: Metadata = {
-  title: "SignVerse — Indian Sign Language (ISL) & 3D Interactive Learning",
-  description: "Learn Indian Sign Language (ISL) with real-time AI gesture feedback, interactive 3D hand visualizations, and step-by-step ISLRTC verified curriculum.",
+  title: "SignVerse — 3D & AI Sign Language Learning Platform",
+  description: "Premium Indian Sign Language (ISL) learning platform with interactive 3D hand visualizations, AI gesture feedback, gamified progress, and comprehensive curriculum.",
+  openGraph: {
+    title: "SignVerse — 3D & AI Sign Language Learning Platform",
+    description: "Premium Indian Sign Language (ISL) learning platform with interactive 3D hand visualizations, AI gesture feedback, gamified progress, and comprehensive curriculum.",
+  },
 };
 
 export default function RootLayout({

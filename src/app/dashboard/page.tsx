@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ProtectedLayout } from '@/components/protected-layout';
+import { Navbar } from '@/components/navbar';
 import { useAuth } from '@/hooks/use-auth';
 import {
   Zap,
@@ -120,75 +121,11 @@ export default function DashboardPage() {
 
   return (
     <ProtectedLayout>
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-3 cursor-pointer"
-            >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-sky-400 flex items-center justify-center">
-                <Zap className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h1 className="font-display font-bold text-lg">SignVerse</h1>
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800">ISL</span>
-                </div>
-                <p className="text-xs text-muted-foreground">Student Portal</p>
-              </div>
-            </motion.div>
-          </Link>
+      <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20 selection:text-primary">
+        <Navbar />
 
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2 sm:gap-4"
-          >
-            <Link href="/alphabet">
-              <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
-                <BookOpen className="w-4 h-4 mr-1.5" />
-                Alphabet
-              </Button>
-            </Link>
-            <Link href="/vocabulary">
-              <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
-                Vocabulary
-              </Button>
-            </Link>
-            <Link href="/practice">
-              <Button variant="ghost" size="sm">
-                Practice
-              </Button>
-            </Link>
-            <Link href="/chat">
-              <Button variant="ghost" size="sm" className="hidden md:inline-flex">
-                <MessageSquare className="w-4 h-4" />
-                AI Guide
-              </Button>
-            </Link>
-            <Link href="/profile">
-              <Button variant="ghost" size="sm">
-                <Settings className="w-4 h-4" />
-              </Button>
-            </Link>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Logout</span>
-            </Button>
-          </motion.div>
-        </div>
-      </header>
-
-      {/* Main content */}
-      <main className="max-w-7xl mx-auto px-6 py-8 space-y-12">
+        {/* Main content */}
+        <main className="max-w-7xl mx-auto px-6 py-8 space-y-12">
         {/* Stats Section */}
         <motion.section
           variants={containerVariants}
@@ -440,11 +377,11 @@ export default function DashboardPage() {
           <motion.div variants={itemVariants}>
             <Card className="p-6 bg-gradient-to-br from-accent/10 to-accent/5 border-accent/20 hover:border-accent/50 transition-colors group cursor-pointer">
               <BookOpen className="w-8 h-8 text-accent mb-3 group-hover:scale-110 transition-transform" />
-              <h3 className="font-display font-semibold mb-2">Resources</h3>
-              <p className="text-sm text-muted-foreground mb-4">Access learning materials</p>
-              <Link href="/resources">
+              <h3 className="font-display font-semibold mb-2">Vocabulary Lexicon</h3>
+              <p className="text-sm text-muted-foreground mb-4">Explore 100+ verified ISL words & phrases</p>
+              <Link href="/vocabulary">
                 <Button variant="ghost" size="sm" className="pl-0">
-                  Explore <ArrowRight className="ml-2 w-4 h-4" />
+                  Explore Signs <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
             </Card>
